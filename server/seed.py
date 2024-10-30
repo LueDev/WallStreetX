@@ -41,7 +41,7 @@ if __name__ == '__main__':
         # Create sample stocks
         stocks = [
             Stock(symbol='AAPL', company_name='Apple Inc.', current_price=175.30),
-            Stock(symbol='GOOGL', company_name='Alphabet Inc.', current_price=2830.22)
+            Stock(symbol='GOOGL', company_name='Alphabet Inc.', current_price=175.46)
         ]
         db.session.add_all(stocks)
 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
             ),  # Trade made by admin user
             Trade(
                 user_id=2, stock_id=2, trade_type='sell', quantity=5,
-                price_at_trade=2830.22, timestamp=fake.date_time()
+                price_at_trade=175.46, timestamp=fake.date_time()
             )
         ]
         db.session.add_all(trades)

@@ -189,7 +189,7 @@ const StockPicker = () => {
         </div>
       </div>
 
-      <StockInfoTable stockData={stockInfo} />
+      <StockInfoTable stock={stockInfo} />
     </div>
   );
 };

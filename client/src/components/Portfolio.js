@@ -3,32 +3,26 @@ import axios from 'axios';
 
 const Portfolio = () => {
   const [portfolio, setPortfolio] = useState([]);
-  const [totalValue, setTotalValue] = useState(0);
 
   useEffect(() => {
     const fetchPortfolio = async () => {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5555/api/portfolio', {
-        headers: { 'x-access-token': token },
-      });
-
-      setPortfolio(response.data);
-
-      // Calculate total portfolio value
-      const value = response.data.reduce(
-        (acc, stock) => acc + stock.quantity * stock.current_price, 0
-      );
-      setTotalValue(value);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5555/api/portfolio', {
+          headers: { 'x-access-token': token },
+        });
+        setPortfolio(response.data);
+      } catch (error) {
+        console.error('Error fetching portfolio data:', error);
+      }
     };
 
     fetchPortfolio();
   }, []);
 
   return (
-    <div className="portfolio-container">
-      <h1>My Portfolio</h1>
-      <h2>Total Value: ${totalValue.toFixed(2)}</h2>
-
+    <div className="portfolio">
+      <h2>Portfolio Summary</h2>
       <table>
         <thead>
           <tr>
@@ -36,20 +30,19 @@ const Portfolio = () => {
             <th>Quantity</th>
             <th>Avg Buy Price</th>
             <th>Current Price</th>
-            <th>Actions</th>
+            <th>Current Value</th>
+            <th>Net Profit/Loss</th>
           </tr>
         </thead>
         <tbody>
-          {portfolio.map((stock) => (
-            <tr key={stock.stock_symbol}>
-              <td>{stock.stock_symbol}</td>
-              <td>{stock.quantity}</td>
-              <td>${stock.avg_buy_price.toFixed(2)}</td>
-              <td>${stock.current_price.toFixed(2)}</td>
-              <td>
-                <button>Buy</button>
-                <button>Sell</button>
-              </td>
+          {portfolio.map((entry) => (
+            <tr key={entry.stock_symbol}>
+              <td>{entry.stock_symbol}</td>
+              <td>{entry.quantity}</td>
+              <td>${entry.avg_buy_price ? entry.avg_buy_price.toFixed(2) : 'N/A'}</td>
+              <td>${entry.current_price ? entry.current_price.toFixed(2) : 'N/A'}</td>
+              <td>${entry.current_value ? entry.current_value.toFixed(2) : 'N/A'}</td>
+              <td>${entry.net_profit_loss ? entry.net_profit_loss.toFixed(2) : 'N/A'}</td>
             </tr>
           ))}
         </tbody>

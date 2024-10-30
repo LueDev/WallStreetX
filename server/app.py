@@ -8,13 +8,17 @@ import jwt, requests, os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from flask_bcrypt import generate_password_hash, check_password_hash
+from cachetools import TTLCache
 
 from config import app, db, api
-from models import User, Stock, Portfolio, Trade
+from models import User, Stock, Portfolio, Trade, StockTicker
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 RAPID_API_KEY = os.getenv("RAPIDAPI_KEY")
 RAPID_API_HOST = os.getenv("RAPIDAPI_HOST")
+
+# Cache for stock prices with TTL of 300 seconds (5 minutes)
+price_cache = TTLCache(maxsize=10000, ttl=300)
 
 # Token-required decorator for protected routes
 def token_required(f):
@@ -36,6 +40,34 @@ def token_required(f):
 
         return f(current_user, *args, **kwargs)
     return decorated
+
+def fetch_stock_price(symbol):
+    """Fetch stock price with caching."""
+    if symbol in price_cache:
+        print(f"Returning cached price for {symbol}")
+        return price_cache[symbol]  # Return cached price
+
+    url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v3/get-quote"
+    headers = {
+        "x-rapidapi-key": RAPID_API_KEY,
+        "x-rapidapi-host": RAPID_API_HOST
+    }
+    params = {"symbol": symbol, "region": "US"}
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+        price = data['quoteResponse']['result'][0].get('regularMarketPrice')
+        if price:
+            price_cache[symbol] = price  # Cache the price
+            return price
+        else:
+            raise ValueError(f"No price found for {symbol}")
+    except Exception as e:
+        print(f"Error fetching price for {symbol}: {str(e)}")
+        return None
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -87,15 +119,18 @@ def get_historical_data(current_user, symbol):
 @app.route('/api/portfolio', methods=['GET'])
 @token_required
 def get_portfolio(current_user):
-    holdings = Portfolio.query.filter_by(user_id=current_user.id).all()
+    portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
     result = [
         {
-            'stock_symbol': holding.stock.symbol,
-            'quantity': holding.quantity,
-            'avg_buy_price': holding.avg_buy_price,
-            'current_price': holding.stock.current_price
+            'stock_symbol': entry.stock.symbol,
+            'quantity': entry.quantity,
+            'avg_buy_price': entry.avg_buy_price,
+            'current_value': entry.current_value,
+            'net_profit_loss': entry.net_profit_loss,
+            'sharpe_ratio': entry.sharpe_ratio,
+            'dividend_yield': entry.dividend_yield
         }
-        for holding in holdings
+        for entry in portfolios
     ]
     return jsonify(result), 200
 
@@ -109,12 +144,88 @@ def get_trade_history(current_user):
             'trade_type': trade.trade_type,
             'quantity': trade.quantity,
             'price_at_trade': trade.price_at_trade,
+            'net_profit': trade.net_profit,
             'timestamp': trade.timestamp
         }
         for trade in trades
     ]
     return jsonify(result), 200
 
+@app.route('/api/trades', methods=['POST'])
+@token_required
+def execute_trade(current_user):
+    data = request.get_json()
+    stock = Stock.query.get(data['stock_id'])
+    trade_type = data['trade_type']
+    quantity = int(data['quantity'])
+
+    if not stock:
+        return jsonify({"error": "Stock not found."}), 404
+
+    portfolio_entry = Portfolio.query.filter_by(
+        user_id=current_user.id, stock_id=stock.id
+    ).first()
+
+    if trade_type == 'sell':
+        if not portfolio_entry or portfolio_entry.quantity < quantity:
+            return jsonify({"error": "Insufficient stock quantity."}), 400
+
+        # Calculate net profit from the sale
+        sale_value = quantity * stock.current_price
+        buy_cost = quantity * portfolio_entry.avg_buy_price
+        net_profit = sale_value - buy_cost
+
+        # Update portfolio and remove entry if quantity is zero
+        portfolio_entry.quantity -= quantity
+        portfolio_entry.net_profit_loss += net_profit
+
+        if portfolio_entry.quantity == 0:
+            db.session.delete(portfolio_entry)
+
+    elif trade_type == 'buy':
+        trade_value = quantity * stock.current_price
+
+        if portfolio_entry:
+            # Update existing entry
+            total_cost = (portfolio_entry.avg_buy_price * portfolio_entry.quantity) + trade_value
+            new_quantity = portfolio_entry.quantity + quantity
+            portfolio_entry.avg_buy_price = total_cost / new_quantity
+            portfolio_entry.quantity = new_quantity
+        else:
+            # Create new portfolio entry
+            new_entry = Portfolio(
+                user_id=current_user.id,
+                stock_id=stock.id,
+                quantity=quantity,
+                avg_buy_price=stock.current_price,
+                initial_capital=trade_value
+            )
+            db.session.add(new_entry)
+
+    # Create new trade log
+    new_trade = Trade(
+        user_id=current_user.id,
+        stock_id=stock.id,
+        trade_type=trade_type,
+        quantity=quantity,
+        price_at_trade=stock.current_price,
+        net_profit=net_profit if trade_type == 'sell' else 0.0
+    )
+    db.session.add(new_trade)
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Trade executed successfully."}), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/tickers', methods=['GET'])
+@token_required
+def get_tickers(current_user):
+    tickers = StockTicker.query.all()
+    result = [{"symbol": ticker.symbol, "company_name": ticker.company_name} for ticker in tickers]
+    return jsonify(result), 200
 
 class StockList(Resource):
     @token_required
