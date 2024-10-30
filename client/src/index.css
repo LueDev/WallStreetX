@@ -1,0 +1,288 @@
+/* index.css */
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Body Styling */
+body {
+  background-color: #f5f7fa;
+  color: #333;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Navbar Styling */
+nav {
+  background-color: #007bff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: #ffcb05;
+}
+
+/* Container Styling */
+.container {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Chart and Sidebar Layout for Desktop */
+.chart-and-sidebar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* Chart Section (60% width on desktop) */
+.chart-container {
+  flex: 60%;
+  height: 420px;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar for Trade Form and Stock Info (40% width on desktop) */
+.sidebar {
+  flex: 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Trade Form Styling */
+.trade-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trade-form input,
+.trade-form select,
+.trade-form button {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.trade-form button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.trade-form button:hover {
+  background-color: #218838;
+}
+
+/* Button Styling */
+button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Stock Picker Dropdown Styling */
+select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #f1f1f1;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+/* Table Styling (For Stock Info and Trade History) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+table, th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Stock Info Table Styling */
+.stock-info-container {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.stock-info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stock-info-table th, 
+.stock-info-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.stock-info-table th {
+  background-color: #007bff;
+  color: white;
+}
+
+.stock-info-table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.stock-info-table td {
+  font-size: 16px;
+}
+
+/* Login.css */
+
+/* Container for the whole login page */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f5f7fa;
+}
+
+/* Banner section for branding */
+.login-banner {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-banner h1 {
+  font-size: 3rem;
+  color: #007bff;
+  margin: 0;
+}
+
+.login-banner p {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 5px 0 15px;
+}
+
+/* Login form styling */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 300px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Input fields */
+.login-form input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+/* Login button styling */
+.login-form button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+  }
+
+  .container {
+    margin: 20px;
+    padding: 10px;
+  }
+
+  .chart-and-sidebar {
+    flex-direction: column;
+  }
+
+  .chart-container,
+  .sidebar {
+    flex: 100%;
+  }
+}
