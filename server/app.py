@@ -58,7 +58,7 @@ def login():
         token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.utcnow() + timedelta(hours=1)
-        }, app.config['SECRET_KEY'], algorithm="HS256")
+        }, SECRET_KEY, algorithm="HS256")
         return jsonify({'token': token})
     return {'message': 'Invalid credentials'}, 401
 
@@ -83,6 +83,38 @@ def get_historical_data(current_user, symbol):
         return jsonify(data), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/portfolio', methods=['GET'])
+@token_required
+def get_portfolio(current_user):
+    holdings = Portfolio.query.filter_by(user_id=current_user.id).all()
+    result = [
+        {
+            'stock_symbol': holding.stock.symbol,
+            'quantity': holding.quantity,
+            'avg_buy_price': holding.avg_buy_price,
+            'current_price': holding.stock.current_price
+        }
+        for holding in holdings
+    ]
+    return jsonify(result), 200
+
+@app.route('/api/trade-history', methods=['GET'])
+@token_required
+def get_trade_history(current_user):
+    trades = Trade.query.filter_by(user_id=current_user.id).order_by(Trade.timestamp.desc()).all()
+    result = [
+        {
+            'stock_symbol': trade.stock.symbol,
+            'trade_type': trade.trade_type,
+            'quantity': trade.quantity,
+            'price_at_trade': trade.price_at_trade,
+            'timestamp': trade.timestamp
+        }
+        for trade in trades
+    ]
+    return jsonify(result), 200
+
 
 class StockList(Resource):
     @token_required

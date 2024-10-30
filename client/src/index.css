@@ -17,25 +17,35 @@ body {
 }
 
 /* Navbar Styling */
-nav {
-  background-color: #007bff;
-  padding: 15px;
+.navbar {
+  background-color: #333;
+  padding: 10px;
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
 }
 
-nav a {
-  color: #fff;
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.navbar a {
+  color: white;
   text-decoration: none;
   font-weight: bold;
-  font-size: 18px;
-  transition: color 0.3s ease;
 }
 
-nav a:hover {
-  color: #ffcb05;
+.navbar button {
+  background-color: #ff4d4d;
+  border: none;
+  padding: 5px 10px;
+  color: white;
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background-color: #ff1a1a;
 }
 
 /* Container Styling */
