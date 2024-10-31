@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Login';
 import StockPicker from './StockPicker';
 import Portfolio from './Portfolio';
@@ -14,6 +14,7 @@ function App() {
     <Router>
       {token && <Navbar setToken={setToken} />}  {/* Show Navbar if token exists */}
       <Routes>
+        <Route path="/" element={token ? <Navigate to="/stockpicker" /> : <Navigate to="/login" />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route
           path="/stockpicker"
