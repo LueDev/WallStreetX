@@ -2,7 +2,7 @@ import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = ({ setToken }) => {
   const navigate = useNavigate();
@@ -78,6 +78,9 @@ const Login = ({ setToken }) => {
           </Form>
         )}
       </Formik>
+      <div className="signup-link">
+        <p>No account? <Link to="/signup">Sign up here &rarr;</Link></p>
+      </div>
     </div>
   );
 };

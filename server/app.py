@@ -41,6 +41,16 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+def create_token(user):
+    """Generate JWT token for a user."""
+    payload = {
+        'user_id': user.id,
+        'username': user.username,
+        'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    return token
+
 def fetch_stock_price(symbol):
     """Fetch stock price with caching."""
     if symbol in price_cache:
@@ -68,6 +78,24 @@ def fetch_stock_price(symbol):
         print(f"Error fetching price for {symbol}: {str(e)}")
         return None
 
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    hashed_password = generate_password_hash(data['password'])
+
+    new_user = User(
+        first_name=data['firstName'],
+        last_name=data['lastName'],
+        username=data['username'],
+        email=data['email'],
+        password_hash=hashed_password
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    token = create_token(new_user) 
+    return jsonify(token=token)
 
 @app.route('/register', methods=['POST'])
 def register():

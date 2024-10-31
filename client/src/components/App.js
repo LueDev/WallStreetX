@@ -6,6 +6,7 @@ import Portfolio from './Portfolio';
 import TradeHistory from './TradeHistory';
 import Navbar from './Navbar';  // Import Navbar
 import ProtectedRoute from './ProtectedRoute';
+import Signup from './SignUp';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -16,6 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={token ? <Navigate to="/stockpicker" /> : <Navigate to="/login" />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
+        <Route path="/signup" element={<Signup setToken={setToken} />} />
         <Route
           path="/stockpicker"
           element={

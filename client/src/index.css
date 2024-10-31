@@ -16,6 +16,85 @@ body {
   font-size: 16px;
 }
 
+/* Sign-Up and Login Shared Styles */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.auth-banner {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-banner h1 {
+  font-size: 3rem;
+  color: #007bff;
+  margin: 0;
+}
+
+.auth-banner p {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 5px 0 15px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 300px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Input fields for both forms */
+.auth-form input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+/* Button styling for both forms */
+.auth-form button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-form button:hover {
+  background-color: #0056b3;
+}
+
+/* Link styling for navigation between login and sign-up */
+.auth-link {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6a1b9a;
+}
+
+.auth-link a {
+  color: #6a1b9a;
+  text-decoration: none;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
 /* Navbar Styling */
 .navbar {
   background-color: #333;

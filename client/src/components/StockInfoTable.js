@@ -26,14 +26,6 @@ const StockInfoTable = ({ stock }) => {
             <td><strong>Technical Rating:</strong></td>
             <td>{stock.technicalRating}</td>
           </tr>
-          <tr>
-            <td><strong>Market Cap:</strong></td>
-            <td>${stock.marketCap}</td>
-          </tr>
-          <tr>
-            <td><strong>Volume:</strong></td>
-            <td>{stock.volume}</td>
-          </tr>
         </tbody>
       </table>
     </div>
