@@ -18,8 +18,10 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 RAPID_API_KEY = os.getenv("RAPIDAPI_KEY")
 RAPID_API_HOST = os.getenv("RAPIDAPI_HOST")
+DISK=os.getenv("DISK")
 
 app.config['JWT_SECRET_KEY'] = SECRET_KEY or 'your_default_secret'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////var/data/wallstreetx.db'
 
 # Cache for stock prices with TTL of 300 seconds (5 minutes)
 price_cache = TTLCache(maxsize=10000, ttl=300)
