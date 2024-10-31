@@ -369,4 +369,4 @@ api.add_resource(TradeResource, '/api/trades')
 api.add_resource(HistoricalDataResource, '/api/historical/<string:symbol>')
 
 if __name__ == '__main__':
-    app.run(port=int(os.getenv("PORT", 8000)), debug=True)
+    app.run(port=int(os.getenv("PORT", 10000)), debug=True)
