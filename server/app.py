@@ -13,9 +13,13 @@ from cachetools import TTLCache
 from config import app, db, api
 from models import User, Stock, Portfolio, Trade, StockTicker
 
+load_dotenv()
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 RAPID_API_KEY = os.getenv("RAPIDAPI_KEY")
 RAPID_API_HOST = os.getenv("RAPIDAPI_HOST")
+
+app.config['JWT_SECRET_KEY'] = SECRET_KEY or 'your_default_secret'
 
 # Cache for stock prices with TTL of 300 seconds (5 minutes)
 price_cache = TTLCache(maxsize=10000, ttl=300)
@@ -42,13 +46,12 @@ def token_required(f):
     return decorated
 
 def create_token(user):
-    """Generate JWT token for a user."""
     payload = {
         'user_id': user.id,
         'username': user.username,
-        'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+        'exp': datetime.utcnow() + timedelta(hours=1)
     }
-    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    token = jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm="HS256")
     return token
 
 def fetch_stock_price(symbol):
@@ -81,8 +84,16 @@ def fetch_stock_price(symbol):
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
-    hashed_password = generate_password_hash(data['password'])
 
+    # Check if email already exists
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        return jsonify({"error": "Email already registered"}), 400
+
+    # Hash the password
+    hashed_password = generate_password_hash(data['password']).decode('utf-8')
+
+    # Create new user
     new_user = User(
         first_name=data['firstName'],
         last_name=data['lastName'],
@@ -91,10 +102,12 @@ def signup():
         password_hash=hashed_password
     )
 
+    # Add and commit the new user
     db.session.add(new_user)
     db.session.commit()
 
-    token = create_token(new_user) 
+    # Generate token
+    token = create_token(new_user)
     return jsonify(token=token)
 
 @app.route('/register', methods=['POST'])
@@ -356,4 +369,4 @@ api.add_resource(TradeResource, '/api/trades')
 api.add_resource(HistoricalDataResource, '/api/historical/<string:symbol>')
 
 if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    app.run(port=int(os.getenv("PORT", 8000)), debug=True)
