@@ -4,6 +4,8 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
+host = process.env.REACT_APP_HOST
+
 const Login = ({ setToken }) => {
   const navigate = useNavigate();
 
@@ -17,7 +19,7 @@ const Login = ({ setToken }) => {
 
   const handleLogin = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post('http://localhost:5555/login', values);
+      const response = await axios.post(host+'/login', values);
       const { token } = response.data;
 
       localStorage.setItem('token', token);
