@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const host = process.env.REACT_APP_HOST;
+
 const Portfolio = () => {
   const [portfolio, setPortfolio] = useState([]);
 
@@ -8,7 +10,7 @@ const Portfolio = () => {
     const fetchPortfolio = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5555/api/portfolio', {
+        const response = await axios.get(`${host}/api/portfolio`, {
           headers: { 'x-access-token': token },
         });
         setPortfolio(response.data);

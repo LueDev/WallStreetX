@@ -3,6 +3,8 @@ import axios from 'axios';
 import TradingViewWidget from './TradingViewWidget';
 import StockInfoTable from './StockInfoTable';
 
+const host = process.env.REACT_APP_HOST;
+
 const StockPicker = () => {
   const [stocks, setStocks] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);
@@ -22,7 +24,7 @@ const StockPicker = () => {
     }
 
     try {
-      const response = await axios.get('http://localhost:5555/api/stocks', {
+      const response = await axios.get(`${host}/api/stocks`, {
         headers: { 'x-access-token': token },
       });
 
@@ -43,7 +45,7 @@ const StockPicker = () => {
   const fetchHistoricalData = async (symbol) => {
     try {
       const response = await axios.get(
-        `http://localhost:5555/api/historical/${symbol}`,
+        `${host}/api/historical/${symbol}`,
         { headers: { 'x-access-token': token } }
       );
   
@@ -113,7 +115,7 @@ const StockPicker = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5555/api/trades',
+        `${host}/api/trades`,
         tradeData,
         { headers: { 'x-access-token': token } }
       );

@@ -4,12 +4,12 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
-host = process.env.REACT_APP_HOST
+const host = process.env.REACT_APP_HOST;
+console.log("HOST: ", process.env.REACT_APP_HOST)
 
 const Login = ({ setToken }) => {
   const navigate = useNavigate();
 
-  // Yup validation schema
   const validationSchema = Yup.object({
     username: Yup.string().required('Username is required'),
     password: Yup.string()
@@ -19,7 +19,7 @@ const Login = ({ setToken }) => {
 
   const handleLogin = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post(host+'/login', values);
+      const response = await axios.post(`${host}/login`, values);
       const { token } = response.data;
 
       localStorage.setItem('token', token);

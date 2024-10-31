@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const host = process.env.REACT_APP_HOST;
+
 const TradeHistory = () => {
   const [trades, setTrades] = useState([]);
   const token = localStorage.getItem('token'); // Token from localStorage
@@ -8,7 +10,7 @@ const TradeHistory = () => {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const response = await axios.get('http://localhost:5555/api/trade-history', {
+        const response = await axios.get(`${host}/api/trade-history`, {
           headers: { 'x-access-token': token },
         });
         setTrades(response.data);
