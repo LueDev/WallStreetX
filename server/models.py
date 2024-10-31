@@ -41,7 +41,7 @@ class Portfolio(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     stock_id = db.Column(db.Integer, db.ForeignKey('stocks.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    avg_buy_price = db.Column(db.Float, nullable=True)
+    avg_buy_price = db.Column(db.Float, nullable=False, default=0.0)
     current_value = db.Column(db.Float, default=0.0)
     initial_capital = db.Column(db.Float, nullable=True)
     net_profit_loss = db.Column(db.Float, default=0.0)
