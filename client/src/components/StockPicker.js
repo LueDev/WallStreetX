@@ -37,7 +37,7 @@ const StockPicker = () => {
       }
     } catch (error) {
       console.error('Error fetching stocks:', error);
-      alert('Failed to fetch stocks. Please log in again.');
+      alert('Failed to fetch stocks. Please log in again.'); //the token would be expired if this occurs.
     }
   };
 

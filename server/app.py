@@ -295,7 +295,9 @@ class PortfolioResource(Resource):
             portfolio_entry = Portfolio(
                 user_id=current_user.id,
                 stock_id=data['stock_id'],
-                quantity=data['quantity']
+                quantity=data['quantity'],
+                avg_buy_price=data['avg_buy_price'],
+                current_value=data['current_value'],
             )
             db.session.add(portfolio_entry)
             db.session.commit()
