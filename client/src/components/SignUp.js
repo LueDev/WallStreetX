@@ -1,7 +1,6 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
 const host = process.env.REACT_APP_HOST;
@@ -26,8 +25,17 @@ const Signup = ({ setToken }) => {
     }),
     onSubmit: async (values) => {
       try {
-        const response = await axios.post(`${host}/signup`, values);
-        const { token } = response.data;
+        const response = await fetch(`${host}/user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(values),
+        });
+
+        if (!response.ok) throw new Error('Signup failed');
+
+        const { token } = await response.json();
         localStorage.setItem('token', token);
         setToken(token);
         navigate('/stockpicker');

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import TradingViewWidget from './TradingViewWidget';
 import StockInfoTable from './StockInfoTable';
 
@@ -13,7 +12,7 @@ const StockPicker = () => {
   const [tradeType, setTradeType] = useState('buy');
   const [feedback, setFeedback] = useState('');
   const [stockInfo, setStockInfo] = useState({});
-  const [token, setToken] = useState(localStorage.getItem('token')); // Token state
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const intervalRef = useRef(null);
 
   // Fetch stocks from the backend when token is available
@@ -24,37 +23,38 @@ const StockPicker = () => {
     }
 
     try {
-      const response = await axios.get(`${host}/api/stocks`, {
+      const response = await fetch(`${host}/api/stocks`, {
         headers: { 'x-access-token': token },
       });
 
-      const fetchedStocks = response.data;
+      if (!response.ok) throw new Error('Failed to fetch stocks');
+
+      const fetchedStocks = await response.json();
       setStocks(fetchedStocks);
 
       if (fetchedStocks.length > 0) {
         setSelectedStock(fetchedStocks[0]);
-        fetchHistoricalData(fetchedStocks[0].symbol); // Fetch historical data
+        fetchHistoricalData(fetchedStocks[0].symbol);
       }
     } catch (error) {
       console.error('Error fetching stocks:', error);
-      alert('Failed to fetch stocks. Please log in again.'); //the token would be expired if this occurs.
+      alert('Failed to fetch stocks. Please log in again.');
     }
   };
 
   // Fetch historical data for a stock from the backend
   const fetchHistoricalData = async (symbol) => {
     try {
-      const response = await axios.get(
-        `${host}/api/historical/${symbol}`,
-        { headers: { 'x-access-token': token } }
-      );
-  
-      let data = response.data.prices;
-      const sortedData = data.sort((a, b) => a.date - b.date);
-      const uniqueData = sortedData.filter((item, index, array) => {
-        return index === 0 || item.date !== array[index - 1].date;
+      const response = await fetch(`${host}/api/historical/${symbol}`, {
+        headers: { 'x-access-token': token },
       });
-  
+
+      if (!response.ok) throw new Error('Failed to fetch historical data');
+
+      const data = await response.json();
+      const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const uniqueData = sortedData.filter((item, index, array) => index === 0 || item.date !== array[index - 1].date);
+
       const formattedData = uniqueData.map((item) => ({
         time: item.date,
         open: item.open,
@@ -62,24 +62,26 @@ const StockPicker = () => {
         low: item.low,
         close: item.close,
       }));
-  
+
       setHistoricalData(formattedData);
       updateStockInfo(formattedData);
-  
+
       // Update current price in the database
       const latestPrice = formattedData[formattedData.length - 1]?.close;
       if (latestPrice) {
-        await axios.post(
-          `${host}/api/update_stock_price`,
-          { symbol, latest_price: latestPrice },
-          { headers: { 'x-access-token': token } }
-        );
+        await fetch(`${host}/api/update_stock_price`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-access-token': token,
+          },
+          body: JSON.stringify({ symbol, latest_price: latestPrice }),
+        });
       }
     } catch (error) {
       console.error('Error fetching historical data:', error);
     }
   };
-  
 
   // Update stock information based on historical data
   const updateStockInfo = (data) => {
@@ -113,18 +115,22 @@ const StockPicker = () => {
       stock_id: selectedStock.id,
       trade_type: tradeType,
       quantity: parseInt(quantity),
-      price_at_trade: selectedStock.current_price,
-      timestamp: new Date().toISOString(),
     };
 
     try {
-      const response = await axios.post(
-        `${host}/api/trades`,
-        tradeData,
-        { headers: { 'x-access-token': token } }
-      );
+      const response = await fetch(`${host}/api/trades`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': token,
+        },
+        body: JSON.stringify(tradeData),
+      });
 
-      setFeedback(response.data.message);
+      if (!response.ok) throw new Error('Trade execution failed');
+
+      const data = await response.json();
+      setFeedback(data.message);
       setQuantity('');
     } catch (error) {
       console.error('Trade execution failed:', error);

@@ -10,7 +10,8 @@ const TradeHistory = () => {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const response = await axios.get(`${host}/api/trade-history`, {
+        // Updated route to match the current resource-based route structure
+        const response = await axios.get(`${host}/api/trades`, {
           headers: { 'x-access-token': token },
         });
         setTrades(response.data);
@@ -37,24 +38,24 @@ const TradeHistory = () => {
           </tr>
         </thead>
         <tbody>
-          {trades.map((trade, index) => (
-            <tr key={index}>
-              <td>{trade.stock_symbol || 'N/A'}</td>
-              <td>{trade.trade_type || 'N/A'}</td>
-              <td>{trade.quantity || 0}</td>
-              <td>
-                {trade.price_at_trade !== null && trade.price_at_trade !== undefined
-                  ? `$${trade.price_at_trade.toFixed(2)}`
-                  : 'N/A'}
-              </td>
-              <td>
-                {trade.net_profit !== null && trade.net_profit !== undefined
-                  ? `$${trade.net_profit.toFixed(2)}`
-                  : 'N/A'}
-              </td>
-              <td>{new Date(trade.timestamp).toLocaleString() || 'N/A'}</td>
-            </tr>
-          ))}
+          {trades.slice().reverse().map((trade, index) => (
+              <tr key={index}>
+                <td>{trade.stock_symbol || 'N/A'}</td>
+                <td>{trade.trade_type || 'N/A'}</td>
+                <td>{trade.quantity || 0}</td>
+                <td>
+                  {trade.price_at_trade !== null && trade.price_at_trade !== undefined
+                    ? `$${trade.price_at_trade.toFixed(2)}`
+                    : 'N/A'}
+                </td>
+                <td>
+                  {trade.net_profit !== null && trade.net_profit !== undefined
+                    ? `$${trade.net_profit.toFixed(2)}`
+                    : 'N/A'}
+                </td>
+                <td>{new Date(trade.timestamp).toLocaleString() || 'N/A'}</td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>
