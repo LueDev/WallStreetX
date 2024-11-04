@@ -72,8 +72,12 @@ class Portfolio(db.Model, SerializerMixin):
 
             if self.quantity == 0:
                 db.session.delete(self)
+                db.session.commit()
+                return
 
+        # Update the current_value and net_profit_loss
         self.current_value = self.quantity * self.stock.current_price
+        self.net_profit_loss = (self.stock.current_price - self.avg_buy_price) * self.quantity
         db.session.commit()
 
     @property

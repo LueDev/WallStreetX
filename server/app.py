@@ -168,6 +168,7 @@ def get_portfolio(current_user):
             'stock_symbol': entry.stock.symbol,
             'quantity': entry.quantity,
             'avg_buy_price': entry.avg_buy_price,
+            'current_price': entry.stock.current_price,
             'current_value': entry.current_value,
             'net_profit_loss': entry.net_profit_loss,
             'sharpe_ratio': entry.sharpe_ratio,
@@ -176,6 +177,8 @@ def get_portfolio(current_user):
         for entry in portfolios
     ]
     return jsonify(result), 200
+
+
 
 @app.route('/api/trade-history', methods=['GET'])
 @token_required
