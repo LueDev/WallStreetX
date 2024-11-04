@@ -20,7 +20,7 @@ RAPID_API_KEY = os.getenv("RAPIDAPI_KEY")
 RAPID_API_HOST = os.getenv("RAPIDAPI_HOST")
 DATABASE_URL=os.getenv("DATABASE_URL")
 
-app.config['JWT_SECRET_KEY'] = SECRET_KEY or 'your_default_secret'
+app.config['JWT_SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
 # Cache for stock prices with TTL of 300 seconds (5 minutes)
