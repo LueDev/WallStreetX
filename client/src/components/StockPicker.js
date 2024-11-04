@@ -49,32 +49,36 @@ const StockPicker = () => {
         { headers: { 'x-access-token': token } }
       );
   
-      let data = response.data.prices; // Assuming 'prices' contains the historical data
-  
-      // Ensure data is sorted by 'date' in ascending order
+      let data = response.data.prices;
       const sortedData = data.sort((a, b) => a.date - b.date);
-  
-      // Remove duplicate timestamps
       const uniqueData = sortedData.filter((item, index, array) => {
         return index === 0 || item.date !== array[index - 1].date;
       });
   
-      // Map to the format required by the chart
       const formattedData = uniqueData.map((item) => ({
-        time: item.date, // Ensure this is in seconds, not milliseconds
+        time: item.date,
         open: item.open,
         high: item.high,
         low: item.low,
         close: item.close,
       }));
   
-      setHistoricalData(formattedData); // Store the cleaned data in state
-      updateStockInfo(formattedData); // Update stock info
+      setHistoricalData(formattedData);
+      updateStockInfo(formattedData);
+  
+      // Update current price in the database
+      const latestPrice = formattedData[formattedData.length - 1]?.close;
+      if (latestPrice) {
+        await axios.post(
+          `${host}/api/update_stock_price`,
+          { symbol, latest_price: latestPrice },
+          { headers: { 'x-access-token': token } }
+        );
+      }
     } catch (error) {
       console.error('Error fetching historical data:', error);
     }
   };
-  
   
 
   // Update stock information based on historical data
