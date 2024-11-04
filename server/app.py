@@ -273,6 +273,37 @@ def get_tickers(current_user):
     result = [{"symbol": ticker.symbol, "company_name": ticker.company_name} for ticker in tickers]
     return jsonify(result), 200
 
+@app.route('/api/update_stock_price', methods=['POST'])
+@token_required
+def update_stock_price(current_user):
+    """Update the current price of a stock and recalculate portfolio values."""
+    data = request.json
+    symbol = data.get("symbol")
+    latest_price = data.get("latest_price")
+
+    if not symbol or latest_price is None:
+        return jsonify({"error": "Symbol and latest price are required"}), 400
+
+    # Find the stock by symbol and update its current price
+    stock = Stock.query.filter_by(symbol=symbol).first()
+    if not stock:
+        return jsonify({"error": "Stock not found"}), 404
+
+    stock.current_price = latest_price
+
+    # Recalculate portfolio values for all portfolios holding this stock
+    portfolios = Portfolio.query.filter_by(stock_id=stock.id).all()
+    for portfolio in portfolios:
+        portfolio.current_value = portfolio.quantity * latest_price
+        portfolio.net_profit_loss = (latest_price - portfolio.avg_buy_price) * portfolio.quantity
+
+    try:
+        db.session.commit()
+        return jsonify({"message": f"{symbol} price updated successfully"}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 class StockList(Resource):
     @token_required
     def get(self, current_user):
