@@ -20,7 +20,7 @@ RAPID_API_KEY = os.getenv("RAPIDAPI_KEY")
 RAPID_API_HOST = os.getenv("RAPIDAPI_HOST")
 DATABASE_URL=os.getenv("DATABASE_URL")
 
-app.config['JWT_SECRET_KEY'] = SECRET_KEY
+app.config['JWT_SECRET_KEY'] = SECRET_KEY or 'your-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
 # Cache for stock prices with TTL of 300 seconds (5 minutes)
@@ -204,15 +204,40 @@ def execute_trade(current_user):
     stock = Stock.query.get(data['stock_id'])
     trade_type = data['trade_type']
     quantity = int(data['quantity'])
+    net_profit = 0.0
 
     if not stock:
         return jsonify({"error": "Stock not found."}), 404
 
+    # Fetch or create portfolio entry
     portfolio_entry = Portfolio.query.filter_by(
         user_id=current_user.id, stock_id=stock.id
     ).first()
 
-    if trade_type == 'sell':
+    if trade_type == 'buy':
+        # Update or create portfolio entry for the buy
+        trade_value = quantity * stock.current_price
+
+        if portfolio_entry:
+            # Update existing entry
+            total_cost = (portfolio_entry.avg_buy_price * portfolio_entry.quantity) + trade_value
+            new_quantity = portfolio_entry.quantity + quantity
+            portfolio_entry.avg_buy_price = total_cost / new_quantity
+            portfolio_entry.quantity = new_quantity
+        else:
+            # Create new portfolio entry
+            portfolio_entry = Portfolio(
+                user_id=current_user.id,
+                stock_id=stock.id,
+                quantity=quantity,
+                avg_buy_price=stock.current_price,
+                initial_capital=trade_value,
+                current_value=trade_value,
+                net_profit_loss=0.0  # Initial profit is 0 for a new purchase
+            )
+            db.session.add(portfolio_entry)
+
+    elif trade_type == 'sell':
         if not portfolio_entry or portfolio_entry.quantity < quantity:
             return jsonify({"error": "Insufficient stock quantity."}), 400
 
@@ -227,26 +252,9 @@ def execute_trade(current_user):
 
         if portfolio_entry.quantity == 0:
             db.session.delete(portfolio_entry)
-
-    elif trade_type == 'buy':
-        trade_value = quantity * stock.current_price
-
-        if portfolio_entry:
-            # Update existing entry
-            total_cost = (portfolio_entry.avg_buy_price * portfolio_entry.quantity) + trade_value
-            new_quantity = portfolio_entry.quantity + quantity
-            portfolio_entry.avg_buy_price = total_cost / new_quantity
-            portfolio_entry.quantity = new_quantity
         else:
-            # Create new portfolio entry
-            new_entry = Portfolio(
-                user_id=current_user.id,
-                stock_id=stock.id,
-                quantity=quantity,
-                avg_buy_price=stock.current_price,
-                initial_capital=trade_value
-            )
-            db.session.add(new_entry)
+            portfolio_entry.current_value = portfolio_entry.quantity * stock.current_price
+            portfolio_entry.net_profit_loss += net_profit
 
     # Create new trade log
     new_trade = Trade(
@@ -265,6 +273,7 @@ def execute_trade(current_user):
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
     
 @app.route('/api/tickers', methods=['GET'])
 @token_required

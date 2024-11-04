@@ -47,14 +47,16 @@ if __name__ == '__main__':
         # Create sample stocks
         stocks = [
             Stock(symbol="AAPL", company_name="Apple Inc.", current_price=175.30),
-            Stock(symbol="GOOGL", company_name="Alphabet Inc.", current_price=175.46)
+            Stock(symbol="GOOGL", company_name="Alphabet Inc.", current_price=110.00),
+            Stock(symbol="SPY", company_name="SPDR S&P 500 ETF TRUST", current_price=399.46)
         ]
         db.session.add_all(stocks)
 
         # Create sample portfolio entries
         portfolios = [
             Portfolio(user_id=1, stock_id=1, quantity=10, avg_buy_price=175.30, initial_capital=1753.00),
-            Portfolio(user_id=2, stock_id=2, quantity=5, avg_buy_price=175.46, initial_capital=877.30)
+            Portfolio(user_id=1, stock_id=2, quantity=10, avg_buy_price=110.00, initial_capital=1110.00),
+            Portfolio(user_id=1, stock_id=3, quantity=10, avg_buy_price=400.00, initial_capital=4000.00)
         ]
         db.session.add_all(portfolios)
 
@@ -65,8 +67,12 @@ if __name__ == '__main__':
                 price_at_trade=175.30, timestamp=fake.date_time()
             ),
             Trade(
-                user_id=2, stock_id=2, trade_type="sell", quantity=5,
-                price_at_trade=175.46, timestamp=fake.date_time()
+                user_id=1, stock_id=2, trade_type="buy", quantity=5,
+                price_at_trade=110.00, timestamp=fake.date_time()
+            ),
+            Trade(
+                user_id=1, stock_id=3, trade_type="buy", quantity=10,
+                price_at_trade=400.00, timestamp=fake.date_time()
             )
         ]
         db.session.add_all(trades)
