@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, make_response
 from flask_restful import Resource, Api
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
 from functools import wraps
 import jwt, requests, os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from flask_bcrypt import generate_password_hash, check_password_hash
 from cachetools import TTLCache
+import ipdb
 
 from config import app, db
 from models import User, Stock, Portfolio, Trade, StockTicker
@@ -53,6 +55,25 @@ def create_token(user):
     payload = {'user_id': user.id, 'username': user.username, 'exp': datetime.utcnow() + timedelta(hours=1)}
     token = jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm="HS256")
     return token
+
+@app.route('/api/successfulStock', methods=["GET"])
+def get_successfulStock():
+    threshold = request.args.get('threshold', type=float)
+    if threshold is None:
+        return make_response({"error": "threshold not present"}), 404
+    
+    results = (Portfolio.query.options(joinedload(Portfolio.stock))).filter(Portfolio.quantity >= threshold).all()
+
+    stocks_above_threshold = [{
+        "stock_id": portfolio.stock_id,
+        "symbol": portfolio.stock.symbol,
+        "company_name": portfolio.stock.company_name,
+        "quantity": portfolio.quantity
+     } for portfolio in results]
+    
+    return jsonify(stocks_above_threshold), 200
+               
+    
 
 # Signup, login, logout, and register routes
 class UserResource(Resource):

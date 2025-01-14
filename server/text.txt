@@ -1,0 +1,84 @@
+class StockSearchResource(Resource):
+    def get(self):
+        query_params = request.args
+        symbol = query_params.get('symbol', None)
+        min_price = query_params.get('min_price', None)
+        query = Stock.query
+        if symbol:
+            query = query.filter(Stock.symbol.ilike(f"%{symbol}%"))
+        if min_price:
+            query = query.filter(Stock.current_price >= float(min_price))
+        results = query.all()
+        return jsonify([stock.to_dict() for stock in results])
+
+@app.route('/bakeries/<int:id>')
+def bakery_by_id(id):
+    bakery = Bakery.query.filter(Bakery.id == id).first()
+    
+    if bakery:
+        body = bakery.to_dict()
+        status = 200
+    else:
+        body = {'message': f'Bakery {id} not found.'}
+        status = 404
+
+    # body = jsonify([bakery.to_dict() for bakery in bakery])
+    return make_response(body, status)
+
+StockSearchResource (using request.args in a class-based Flask-RESTful resource):
+
+This example utilizes request.args to access query parameters.
+Best for receiving URL query parameters. Query parameters are 
+part of the URL after a ? (e.g., /stocks?symbol=AAPL&min_price=100).
+Cannot handle JSON or form data directly. It’s ideal when you’re 
+receiving simple parameters embedded in the URL and not expecting complex nested data.
+
+
+bakery_by_id (using request.data or request.form in a function-based route):
+
+This example is a Flask route defined with @app.route.
+If you want it to handle form data (e.g., submitted via an HTML form), 
+use request.form, which parses data sent in application/x-www-form-urlencoded format.
+If you want it to handle JSON data, use request.get_json() to 
+parse the JSON payload (sent in application/json format).
+Flexible for form data or JSON based on how you retrieve data.
+
+Summary
+
+request.args (used in StockSearchResource) – Best for receiving URL query parameters.
+
+request.form and request.get_json() (used in bakery_by_id) – Best for 
+handling form data or JSON data, respectively.
+
+
+
+from flask import jsonify, request, make_response
+from sqlalchemy.orm import joinedload
+from models import Portfolio, Stock
+
+@app.route('/stocks/profitable', methods=['GET'])
+def get_profitable_stocks():
+    try:
+        # Retrieve the threshold from query parameters
+        threshold = request.args.get('threshold', type=float)
+        if threshold is None:
+            return make_response({"error": "Threshold parameter is required."}, 400)
+
+        # Query portfolios with a join to stocks where net_profit_loss is above the threshold
+        results = (Portfolio.query
+                   .options(joinedload(Portfolio.stock))  # Eager load associated Stock
+                   .filter(Portfolio.net_profit_loss > threshold)
+                   .all())
+
+        # Convert results to a dictionary with Stock information
+        stocks_above_threshold = [{
+            "stock_id": portfolio.stock.id,
+            "symbol": portfolio.stock.symbol,
+            "company_name": portfolio.stock.company_name,
+            "net_profit_loss": portfolio.net_profit_loss
+        } for portfolio in results]
+
+        return jsonify(stocks_above_threshold), 200
+
+    except Exception as e:
+        return make_response({"error": str(e)}, 500)
